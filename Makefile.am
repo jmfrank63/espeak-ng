@@ -6,7 +6,6 @@ BINDIR=@bindir@
 INCDIR=@includedir@/espeak
 LIBDIR=@libdir@
 DATADIR=$(PREFIX)/share/espeak-ng-data
-VIMDIR=$(PREFIX)/share/vim
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = espeak-ng.pc
@@ -68,9 +67,7 @@ clean-local:
 	cd src && rm -f *.o *~ && cd ..
 	cd src/libespeak-ng/ && rm -f *.o *.lo && cd ../..
 	cd tests && rm -f *.o *.lo && cd ..
-if HAVE_GRADLE
-	cd android && $(GRADLE) clean
-endif
+	rm -rf _install/
 
 distclean-local:
 	rm -f espeak-ng-data/*_dict
@@ -79,6 +76,7 @@ distclean-local:
 	rm -f espeak-ng-data/phondata-manifest
 	rm -f espeak-ng-data/phonindex
 	rm -f espeak-ng-data/phontab
+	rm -rf _install/
 
 ##### custom rules:
 
@@ -91,20 +89,6 @@ SUFFIXES=.html .md .ronn .check .test
 
 .ronn.html:
 	$(RONN) --html $<
-
-##### vim:
-
-vim_registrydir = $(VIMDIR)/registry
-vim_registry_DATA = $(srcdir)/vim/registry/*.yaml
-EXTRA_DIST += $(vim_registry_DATA)
-
-vim_addons_ftdetectdir = $(VIMDIR)/addons/ftdetect
-vim_addons_ftdetect_DATA = $(srcdir)/vim/ftdetect/*.vim
-EXTRA_DIST += $(vim_addons_ftdetect_DATA)
-
-vim_addons_syntaxdir = $(VIMDIR)/addons/syntax
-vim_addons_syntax_DATA = $(srcdir)/vim/syntax/*.vim
-EXTRA_DIST += $(vim_addons_syntax_DATA)
 
 ##### documentation:
 
@@ -399,17 +383,6 @@ phsource/phonemes.stamp: \
 	ESPEAK_DATA_PATH=$(CURDIR) src/espeak-ng --compile-intonations && \
 		ESPEAK_DATA_PATH=$(CURDIR) src/espeak-ng --compile-phonemes && \
 		touch $@
-
-##### android targets:
-
-apk-release: espeakdata
-	cd android && $(GRADLE) assembleRelease
-
-apk-debug: espeakdata
-	cd android && $(GRADLE) assembleDebug
-
-apk-check: espeakdata
-	cd android && $(GRADLE) connectedCheck
 
 espeakdata: espeak-ng-data/phontab dictionaries
 
